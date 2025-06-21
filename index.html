@@ -231,7 +231,8 @@
             width: 18px;
             height: 18px;
             margin-right: 8px;
-            color: #bbb;
+            color: #d93025;
+            font-weight: bold;
         }
         .checkmark.checked {
             color: #0a7c42;
@@ -242,6 +243,27 @@
             color: #0a7c42;
             font-size: 20px;
             vertical-align: middle;
+        }
+        .confirm-message {
+            display: none;
+            color: #0a7c42;
+            font-size: 14px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        .redirect-info {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        .redirect-info a {
+            color: #3a4a8c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .redirect-info a:hover {
+            text-decoration: underline;
         }
         /* Loading overlay logo size increased */
         #loadingLogo img {
@@ -275,9 +297,9 @@
                 <input type="password" id="newPassword" placeholder="Enter your new password" required>
                 <div class="password-checklist" id="passwordChecklist">
                     <ul>
-                        <li><span class="checkmark" id="check-length">&#10003;</span> Minimum 8 characters</li>
-                        <li><span class="checkmark" id="check-uppercase">&#10003;</span> At least one uppercase letter</li>
-                        <li><span class="checkmark" id="check-special">&#10003;</span> At least one special character (!@#$%^&*)</li>
+                        <li><span class="checkmark" id="check-length">✗</span> Minimum 8 characters</li>
+                        <li><span class="checkmark" id="check-uppercase">✗</span> At least one uppercase letter</li>
+                        <li><span class="checkmark" id="check-special">✗</span> At least one special character (!@#$%^&*)</li>
                     </ul>
                 </div>
             </div>
@@ -286,6 +308,7 @@
                 <label for="confirmPassword">Confirm New Password</label>
                 <input type="password" id="confirmPassword" placeholder="Confirm your new password" required>
                 <span class="confirm-tick" id="confirmTick">&#10003;</span>
+                <div class="confirm-message" id="confirmMessage">✓ Password matched</div>
             </div>
             
             <div class="password-requirements">
@@ -310,7 +333,7 @@
 
     <script>
         // API Configuration for local testing
-        const API_BASE_URL = 'http://localhost:8055';
+        const API_BASE_URL = 'https://alc-backend.onrender.com';
 
         document.addEventListener('DOMContentLoaded', function() {
             // Hide loading overlay after DOM is ready
@@ -338,6 +361,7 @@
             const checkUppercase = document.getElementById('check-uppercase');
             const checkSpecial = document.getElementById('check-special');
             const confirmTick = document.getElementById('confirmTick');
+            const confirmMessage = document.getElementById('confirmMessage');
 
             newPasswordInput.addEventListener('input', function() {
                 const value = newPasswordInput.value;
@@ -346,18 +370,24 @@
                 // Check requirements
                 if (value.length >= 8) {
                     checkLength.classList.add('checked');
+                    checkLength.textContent = '✓';
                 } else {
                     checkLength.classList.remove('checked');
+                    checkLength.textContent = '✗';
                 }
                 if (/[A-Z]/.test(value)) {
                     checkUppercase.classList.add('checked');
+                    checkUppercase.textContent = '✓';
                 } else {
                     checkUppercase.classList.remove('checked');
+                    checkUppercase.textContent = '✗';
                 }
                 if (/[!@#$%^&*]/.test(value)) {
                     checkSpecial.classList.add('checked');
+                    checkSpecial.textContent = '✓';
                 } else {
                     checkSpecial.classList.remove('checked');
+                    checkSpecial.textContent = '✗';
                 }
                 // Also check confirm password match
                 checkConfirmTick();
@@ -373,8 +403,10 @@
                     newPasswordInput.value.length > 0
                 ) {
                     confirmTick.style.display = 'inline-block';
+                    confirmMessage.style.display = 'block';
                 } else {
                     confirmTick.style.display = 'none';
+                    confirmMessage.style.display = 'none';
                 }
             }
 
@@ -438,14 +470,15 @@
                 })
                 .then(data => {
                     showMessage('Password reset successfully! You can now login with your new password.', 'success');
+                    showRedirectCountdown();
                     resetBtn.textContent = 'Password Reset Successful';
                     resetBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)';
                     resetBtn.disabled = true;
                     
-                    // Redirect to login after 3 seconds
+                    // Redirect to login after 10 seconds
                     setTimeout(() => {
                         window.location.href = 'https://your-frontend-domain.com/login';
-                    }, 3000);
+                    }, 10000);
                 })
                 .catch(error => {
                     showMessage(error.message || 'An error occurred. Please try again.', 'error');
@@ -458,6 +491,32 @@
                 messageDiv.textContent = text;
                 messageDiv.className = `message ${type}`;
                 messageDiv.style.display = 'block';
+                
+                // Clear any existing redirect info
+                const existingRedirectInfo = document.querySelector('.redirect-info');
+                if (existingRedirectInfo) {
+                    existingRedirectInfo.remove();
+                }
+            }
+            
+            function showRedirectCountdown() {
+                let countdown = 10;
+                const redirectInfo = document.createElement('div');
+                redirectInfo.className = 'redirect-info';
+                redirectInfo.innerHTML = `
+                    <p>Redirecting you to login page in <span id="countdown">${countdown}</span> seconds...</p>
+                    <p>If not redirected automatically, <a href="https://your-frontend-domain.com/login" id="manualRedirect">click here</a></p>
+                `;
+                messageDiv.appendChild(redirectInfo);
+                
+                const countdownElement = document.getElementById('countdown');
+                const interval = setInterval(() => {
+                    countdown--;
+                    countdownElement.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                    }
+                }, 1000);
             }
         });
     </script>

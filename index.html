@@ -274,9 +274,77 @@
         #loadingLogo.grow img {
             transform: scale(1.25);
         }
+
+        /* Video Processing Overlay */
+        #processingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        #processingVideo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            transform: translateX(-50%) translateY(-50%);
+            background-size: cover;
+            opacity: 0.25;
+        }
+
+        #processingText {
+            z-index: 1;
+        }
+
+        #processingText p {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+            animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+        }
+
+        #processingText span {
+            font-size: 18px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+            animation: text-focus-in 1.2s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+        }
+
+        @keyframes text-focus-in {
+            0% { filter: blur(12px); opacity: 0; }
+            100% { filter: blur(0px); opacity: 1; }
+        }
     </style>
 </head>
 <body>
+    <!-- Video Processing Overlay -->
+    <div id="processingOverlay">
+        <video autoplay muted loop playsinline id="processingVideo">
+            <source src="loader.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div id="processingText">
+            <p>Processing Your Request</p>
+            <span>This may take a moment, please wait.</span>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
         <div id="loadingLogo">
@@ -362,6 +430,7 @@
             const checkSpecial = document.getElementById('check-special');
             const confirmTick = document.getElementById('confirmTick');
             const confirmMessage = document.getElementById('confirmMessage');
+            const processingOverlay = document.getElementById('processingOverlay');
 
             newPasswordInput.addEventListener('input', function() {
                 const value = newPasswordInput.value;
@@ -446,8 +515,8 @@
             }
             
             function resetPassword(token, newPassword, confirmPassword) {
-                // Show loading state
-                resetBtn.textContent = 'Processing...';
+                // Show video loading overlay
+                processingOverlay.style.display = 'flex';
                 resetBtn.disabled = true;
                 
                 // Call your backend API
@@ -469,6 +538,7 @@
                     throw new Error('Password reset failed');
                 })
                 .then(data => {
+                    processingOverlay.style.display = 'none';
                     showMessage('Password reset successfully! You can now login with your new password.', 'success');
                     showRedirectCountdown();
                     resetBtn.textContent = 'Password Reset Successful';
@@ -481,6 +551,7 @@
                     }, 10000);
                 })
                 .catch(error => {
+                    processingOverlay.style.display = 'none';
                     showMessage(error.message || 'An error occurred. Please try again.', 'error');
                     resetBtn.textContent = 'Reset Password';
                     resetBtn.disabled = false;

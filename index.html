@@ -549,7 +549,7 @@
                     
                     // Redirect to login after 10 seconds
                     setTimeout(() => {
-                        window.location.href = 'https://your-frontend-domain.com/login';
+                        window.location.href = 'https://alc-app-alpha.vercel.app/login';
                     }, 10000);
                 })
                 .catch(error => {
@@ -578,7 +578,7 @@
                 redirectInfo.className = 'redirect-info';
                 redirectInfo.innerHTML = `
                     <p>Redirecting you to login page in <span id="countdown">${countdown}</span> seconds...</p>
-                    <p>If not redirected automatically, <a href="https://your-frontend-domain.com/login" id="manualRedirect">click here</a></p>
+                    <p>If not redirected automatically, <a href="https://alc-app-alpha.vercel.app/login" id="manualRedirect">click here</a></p>
                 `;
                 messageDiv.appendChild(redirectInfo);
                 
